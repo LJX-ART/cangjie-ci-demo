@@ -7,24 +7,46 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  CANGJIE_SDK_TAG: v1.0.5
+  CANGJIE_SDK_ASSET: cangjie-sdk-windows-x64-1.0.5.zip
+
 jobs:
   unit-test:
-    name: Cangjie Unit Test
-    runs-on: ubuntu-latest
+    name: Cangjie Unit Test (Windows)
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Cangjie toolchain
-        uses: Zxilly/setup-cangjie@v1
-        with:
-          version: '0.59.4'
+      - name: Download Cangjie SDK from Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download "$env:CANGJIE_SDK_TAG" `
+            --repo "$env:GITHUB_REPOSITORY" `
+            --pattern "$env:CANGJIE_SDK_ASSET" `
+            --dir "$env:RUNNER_TEMP"
+
+      - name: Extract Cangjie SDK
+        run: |
+          $sdkZip = Join-Path $env:RUNNER_TEMP $env:CANGJIE_SDK_ASSET
+          $sdkDir = Join-Path $env:RUNNER_TEMP "cangjie-sdk"
+          New-Item -ItemType Directory -Path $sdkDir -Force | Out-Null
+          Expand-Archive -LiteralPath $sdkZip -DestinationPath $sdkDir -Force
+          $cjHome = Join-Path $sdkDir "cangjie"
+          echo "CANGJIE_HOME=$cjHome" >> $env:GITHUB_ENV
+          echo "$cjHome\tools\bin"                            >> $env:GITHUB_PATH
+          echo "$cjHome\bin"                                  >> $env:GITHUB_PATH
+          echo "$cjHome\lib\windows_x86_64_cjnative"          >> $env:GITHUB_PATH
+          echo "$cjHome\runtime\lib\windows_x86_64_cjnative"  >> $env:GITHUB_PATH
+          echo "$cjHome\tools\lib"                            >> $env:GITHUB_PATH
 
       - name: Show Cangjie version
         run: |
-          cjc --version
-          cjpm --version
+          cjc -v
+          cjpm -v
 
       - name: Build project
         run: cjpm build
