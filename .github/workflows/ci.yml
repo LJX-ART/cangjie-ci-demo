@@ -1,0 +1,33 @@
+name: Cangjie CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  unit-test:
+    name: Cangjie Unit Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Cangjie toolchain
+        uses: Zxilly/setup-cangjie@v1
+        with:
+          version: '0.59.4'
+
+      - name: Show Cangjie version
+        run: |
+          cjc --version
+          cjpm --version
+
+      - name: Build project
+        run: cjpm build
+
+      - name: Run unit tests
+        run: cjpm test

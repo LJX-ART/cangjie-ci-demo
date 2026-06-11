@@ -1,0 +1,15 @@
+[package]
+cjc-version = "1.0.5"
+compile-option = ""
+description = "A demo Cangjie project for CI/CD homework."
+link-option = ""
+name = "calculator"
+output-type = "executable"
+src-dir = "src"
+target-dir = "target"
+package-configuration = {}
+version = "1.0.0"
+
+[dependencies]
+
+[ffi.c]
